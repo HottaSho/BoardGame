@@ -2,10 +2,19 @@ package game.mechanics;
 
 public class Player {
 
-	Deck myDeck = new Deck();
-	Hand myHand = new Hand();
-	Grave myGrave = new Grave();
+	int startHand = 5;
+	int maxHand = 7;
 	int health = 1000;
+	
+	Deck myDeck;
+	Hand myHand = new Hand(7);
+	Grave myGrave = new Grave();
+	
+	public Player(Deck newDeck){
+		myDeck = newDeck;
+		myDeck.shuffle();
+		draw(5);
+	}
 	
 	public void draw(int num){
 		int milled = myHand.draw(num);

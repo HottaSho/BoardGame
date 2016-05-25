@@ -4,10 +4,14 @@ import game.cards.Card;
 
 public class Hand {
 
-	int maxSize = 7;
-	int size = 5;
+	int maxSize;
+	int size = 0;
 	int oldSize = size;
-	Card[] hand = new Card[size];
+	Card[] cards = new Card[size];
+	
+	public Hand(int maxSize){
+		this.maxSize=maxSize;
+	}
 	
 	// drawing a card... if hand is full return true, false otherwise
 	public int draw(int num){
@@ -22,12 +26,29 @@ public class Hand {
 	}
 	
 	public void add(Card card){
-		hand[oldSize-1] = card;
+		increase();
+		cards[oldSize-1] = card;
 		oldSize++;
 	}
 	
 	public int getSize(){
 		return size;
+	}
+	
+	public void decrease(){
+		Card[] temp = cards;
+		cards = new Card[--size];
+		for(int i=0;i<size;i++){
+			cards[i]=temp[i];
+		}
+	}
+	
+	public void increase(){
+		Card[] temp = cards;
+		cards = new Card[++size];
+		for(int i=0;i<size-1;i++){
+			cards[i]=temp[i];
+		}
 	}
 	
 }
