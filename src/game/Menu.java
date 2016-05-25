@@ -12,6 +12,7 @@ public class Menu extends JFrame implements ActionListener {
 	private JButton b5 = new JButton("Play");
 	private JButton b6 = new JButton("Back");
 	private JPanel pnl = new JPanel(new GridLayout(4, 1, 20, 20));
+	private int gamestate = 0;
 
 	public Menu() {
 		JFrame c = new JFrame();
@@ -23,12 +24,14 @@ public class Menu extends JFrame implements ActionListener {
 				pnl.revalidate();
 				pnl.repaint();
 				pnl.add(b5);
+				gamestate = 1;
 				b5.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						pnl.removeAll();
 						pnl.revalidate();
 						pnl.repaint();
+						gamestate = 2;
 					}
 				});
 
@@ -43,6 +46,7 @@ public class Menu extends JFrame implements ActionListener {
 						pnl.add(b2);
 						pnl.add(b3);
 						pnl.add(b4);
+						gamestate = 0;
 					}
 				});
 			}
