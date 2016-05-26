@@ -3,18 +3,18 @@ package game.cards;
 public class TestDecks {
 
 	public static Card[] getTestDeck0(){
-		Card one = new Card("one", 0);
-		Card two = new Card("two", 0);
-		Card three = new Card("three", 0);
-		Card four = new Card("four", 0);
-		Card five = new Card("five", 0);
-		Card six = new Card("six", 0);
-		Card seven = new Card("seven", 0);
-		Card eight = new Card("eight", 0);
-		Card nine = new Card("nine", 0);
-		Card ten = new Card("ten", 0);
-		Card eleven = new Card("eleven", 0);
-		Card twelve = new Card("twelve", 0);
+		Card one = new Card("one", 2);
+		Card two = new Card("two", 2);
+		Card three = new Card("three", 2);
+		Card four = new Card("four", 2);
+		Card five = new Card("five", 2);
+		Card six = new Card("six", 2);
+		Card seven = new Card("seven", 1);
+		Card eight = new Card("eight", 1);
+		Card nine = new Card("nine", 1);
+		Card ten = new Card("ten", 1);
+		Card eleven = new Card("eleven", 1);
+		Card twelve = new Card("twelve", 1);
 		Card thirteen = new Card("thirteen", 0);
 		Card fourteen = new Card("fourteen", 0);
 		Card fifteen = new Card("fifteen", 0);

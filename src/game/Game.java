@@ -24,25 +24,37 @@ public class Game {
 		TextIO.putln("Welcome to the Card Game\n");
 		initialize();
 		start();
-		prompt();
 		init();
 	}
 	
 	public static void init(){
 		int option = -1;
+		prompt();
 		while(option==-1){
 			TextIO.putln("\nWhat would you like to do:");
 			option = TextIO.getlnInt();
-			if(option==1) displayHand();
-			else if(option==2) useCard();
-			else if(option==3) destCard();
-			else if(option==4) displayBoardA();
-			else if(option==5) displayBoardB();
-			else if(option==6) displayGrave();
-			else if(option==7) displayLife();
-			else if(option==8) draw();
-			else if(option==9) quit();
-			else if(option==0) prompt();
+			switch(option){
+				case 1: displayHand();
+						break;
+				case 2: useCard();
+						break;
+				case 3: destCard();
+						break;
+				case 4: displayBoardA();
+						break;
+				case 5: displayBoardB();
+						break;
+				case 6: displayGrave();
+						break;
+				case 7: displayDeck();
+						break;
+				case 8: draw();
+						break;
+				case 9: quit();
+						break;
+				case 0: prompt();
+						break;
+			}
 			option=-1;
 		}
 	}
@@ -55,7 +67,7 @@ public class Game {
 		TextIO.putln("4: Display monsters on field");
 		TextIO.putln("5: Diplay spells on field");
 		TextIO.putln("6: Disply cards in the grave");
-		TextIO.putln("7: Display life");
+		TextIO.putln("7: Display cards in the deck");
 		TextIO.putln("8: Draw a card");
 		TextIO.putln("9: Quit");
 		TextIO.putln("0: Display these commands");
@@ -89,12 +101,36 @@ public class Game {
 	
 	public static void displayHand(){
 		for(int i=0;i<cur_hand;i++){
-			TextIO.put(hand[i].toString());
+			TextIO.put(i + ". " + hand[i].toString());
 		}
 	}
 	
 	public static void useCard(){
-		
+		// check if hand is empty
+		if(hand[0].empty()){
+			TextIO.putln("Hand is EMPTY");
+			return;
+		}
+		TextIO.putln("Which card would you like to use?");
+		displayHand();
+		int input = -1;
+		while(input<0 || input>cur_hand){
+			TextIO.putln("Enter between [0-"+(cur_hand-1)+"]");
+			input = TextIO.getlnInt();
+		}
+		if(hand[input].top().getType()==0){
+			if(playBoardA(hand[input].top())){
+				hand[input].pop();
+				fixHand(input);
+				cur_hand--;
+			}
+		}else{
+			if(playBoardB(hand[input].top())){
+				hand[input].pop();
+				fixHand(input);
+				cur_hand--;
+			}
+		}
 	}
 	
 	public static void destCard(){
@@ -102,24 +138,68 @@ public class Game {
 	}
 	
 	public static void displayBoardA(){
-		TextIO.putln(deckPile.toString());
+		boolean flag = true;
+		for(int i=0;i<no_boardA_piles;i++){
+			if(!boardA[i].empty()){
+				TextIO.put(i + ". " + boardA[i].toString());
+				flag = false;
+			}
+		}
+		if(flag) TextIO.putln("//boardA is EMPTY");
 	}
 	
 	public static void displayBoardB(){
-		
+		boolean flag = true;
+		for(int i=0;i<no_boardB_piles;i++){
+			if(!boardB[i].empty()){
+				TextIO.put(i + ". " + boardB[i].toString());
+				flag = false;
+			}
+		}
+		if(flag) TextIO.putln("//boardB is EMPTY");
 	}
 	
 	public static void displayGrave(){
-		
+		TextIO.putln(gravePile.toString());
 	}
 	
-	public static void displayLife(){
-		
+	public static void displayDeck(){
+		TextIO.putln(deckPile.toString());
 	}
 	
 	public static void quit(){
 		TextIO.putln("Would you like to quit yes(1) or no(0)");
 		if(TextIO.getlnInt()==1) System.exit(0);
+	}
+	
+	public static void fixHand(int x){
+		for(int i=x;(i<cur_hand)||(i==(max_hand-1));i++){
+			hand[i].addCard(hand[i+1].pop());
+		}
+	}
+	
+	public static boolean playBoardA(Card aCard){
+		for(int i=0;i<no_boardA_piles;i++){
+			if(boardA[i].empty()){
+				boardA[i].addCard(aCard);
+				TextIO.putln("//card played at position A" + i);
+				return true;
+			}
+		}
+		TextIO.putln("//boardA is FULL");
+		return false;
+	}
+	
+	public static boolean playBoardB(Card aCard){
+		for(int i=0;i<no_boardB_piles;i++){
+			if(boardB[i].empty()){
+				boardB[i].addCard(aCard);
+				TextIO.putln("//card played at position B" + i);
+				return true;
+			}
+		}
+		TextIO.putln("//boardB is FULL");
+		return false;
 	}
 	
 	public static void draw(){
@@ -131,9 +211,13 @@ public class Game {
 		if((cur_hand+1)>max_hand){
 			mill(1);
 		}else{
-			hand[cur_hand].addCard(deckPile.pop());
-			cur_hand++;
-			TextIO.putln("//a card is DRAWN");
+			if(deckPile.empty()){
+				TextIO.putln("//deck is EMPTY");
+			}else{
+				hand[cur_hand].addCard(deckPile.pop());
+				cur_hand++;
+				TextIO.putln("//a card is DRAWN");
+			}
 		}
 		draw(x-1);
 	}
@@ -143,9 +227,13 @@ public class Game {
 	}
 	public static void mill(int x){
 		if(x<=0) return;
-		gravePile.addCard(deckPile.pop());
-		TextIO.putln("//a card it MILLED");
-		mill(x-1);
+		if(deckPile.empty()){
+			TextIO.putln("//deck is EMPTY");
+		}else{
+			gravePile.addCard(deckPile.pop());
+			TextIO.putln("//a card it MILLED");
+			mill(x-1);
+		}
 	}
 	
 }

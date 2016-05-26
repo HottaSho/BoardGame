@@ -8,7 +8,7 @@ public class CardPile {
 	private int y;
 	
 	// linked list of cards
-	private LinkedList cardList;
+	protected LinkedList cardList;
 	
 	CardPile(int tx, int ty){
 		x = tx;
@@ -58,14 +58,12 @@ public class CardPile {
 		
 	}
 	
-	// draw pile as Text
+	// return pile as string
 	public String toString(){
 		String result = "";
 		ListIterator iterator = cardList.iterator();
-		
-		while(!iterator.atEnd()){
+		for(int i=0; !iterator.atEnd(); iterator.next()){
 			result+=iterator.current().toString()+"\n";
-			iterator.next();
 		}
 		return result;
 	}
