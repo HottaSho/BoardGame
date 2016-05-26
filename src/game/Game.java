@@ -88,10 +88,10 @@ public class Game {
 			allPiles[2+i] = hand[i] = new HandPile(0,0);
 		
 		for(int i=0; i<no_boardA_piles; i++)
-			allPiles[9+i] = boardA[i] = new BoardPile(0,0);
+			allPiles[(2+no_hand_piles)+i] = boardA[i] = new BoardPile(0,0);
 		
 		for(int i=0; i<no_boardB_piles; i++)
-			allPiles[14+i] = boardB[i] = new BoardPile(0,0);
+			allPiles[(2+no_hand_piles+no_boardA_piles)+i] = boardB[i] = new BoardPile(0,0);
 	}
 	
 	public static void start(){
@@ -121,14 +121,14 @@ public class Game {
 		if(hand[input].top().getType()==0){
 			if(playBoardA(hand[input].top())){
 				hand[input].pop();
-				fixHand(input);
 				cur_hand--;
+				fixHand(input);
 			}
 		}else{
 			if(playBoardB(hand[input].top())){
 				hand[input].pop();
-				fixHand(input);
 				cur_hand--;
+				fixHand(input);
 			}
 		}
 	}
@@ -165,6 +165,7 @@ public class Game {
 	
 	public static void displayDeck(){
 		TextIO.putln(deckPile.toString());
+		deckPile.shuffle();
 	}
 	
 	public static void quit(){
@@ -173,7 +174,8 @@ public class Game {
 	}
 	
 	public static void fixHand(int x){
-		for(int i=x;(i<cur_hand)||(i==(max_hand-1));i++){
+		for(int i=x;i<cur_hand;i++){
+			if(i>=(max_hand-1)) return;
 			hand[i].addCard(hand[i+1].pop());
 		}
 	}
@@ -216,7 +218,7 @@ public class Game {
 			}else{
 				hand[cur_hand].addCard(deckPile.pop());
 				cur_hand++;
-				TextIO.putln("//a card is DRAWN");
+				TextIO.putln("//a card is DRAWN to " + (cur_hand-1));
 			}
 		}
 		draw(x-1);

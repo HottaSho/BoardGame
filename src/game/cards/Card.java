@@ -5,7 +5,7 @@ public class Card {
 	final static int width = 50;
 	final static int height = 70;
 	
-	private static String types[] = {"Monster", "Spell", "Trap"};
+	private static String types[] = {"MONSTER", "SPELL", "TRAP"};
 	
 	private boolean faceup;
 	private int type;
@@ -46,7 +46,9 @@ public class Card {
 	}
 	
 	public String toString(){
-		return name + ", " + type;
+		String stats = "";
+		if(type==0) stats += ", " + "ATK: " + attack + " - VIT: " + health;
+		return name + ", " + types[type] + stats;
 	}
 	
 }

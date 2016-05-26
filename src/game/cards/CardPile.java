@@ -1,5 +1,6 @@
 package game.cards;
 
+import game.TextIO;
 import game.linklist.*;
 
 public class CardPile {
@@ -82,6 +83,7 @@ public class CardPile {
 		Card[] list = shuffle(toArray());
 		cardList.delete();
 		addArray(list);
+		TextIO.putln("//deck is SHUFFLED");
 	}
 	
 	public Card[] shuffle(Card[] list){
