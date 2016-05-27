@@ -20,6 +20,15 @@ public class Card {
 		faceup = false;
 	}
 	
+	// constructor to set attack and health
+	public Card(String n, int t, int a, int h){
+		name = n;
+		type = t;
+		attack = a;
+		health = h;
+		faceup = false;
+	}
+	
 	// get type of card as an int in the interval [0, 2]
 	public int getType(){
 		return type;

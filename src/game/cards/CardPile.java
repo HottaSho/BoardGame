@@ -63,7 +63,7 @@ public class CardPile {
 	public String toString(){
 		String result = "";
 		ListIterator iterator = cardList.iterator();
-		for(int i=0; !iterator.atEnd(); iterator.next()){
+		for(; !iterator.atEnd(); iterator.next()){
 			result+=iterator.current().toString()+"\n";
 		}
 		return result;
