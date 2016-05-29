@@ -1,5 +1,6 @@
 package game.cards;
 
+import game.TestApplet;
 import game.linklist.ListIterator;
 
 public class DeckPile extends CardPile{
@@ -17,6 +18,12 @@ public class DeckPile extends CardPile{
 			result+=(i++)+". "+iterator.current().toString()+"\n";
 		}
 		return result;
+	}
+	
+	public void select(int tx, int ty){
+		
+		TestApplet.drawCard();
+		
 	}
 	
 }
