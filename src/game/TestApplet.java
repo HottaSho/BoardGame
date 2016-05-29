@@ -19,6 +19,7 @@ public class TestApplet extends Applet {
 	final static int distBoard = 10;
 	final static int distHand = 5;
 	final static int distDeck = 30;
+	final static int distBuffer = 20;
 	
 	static DeckPile deckPile;
 	static GravePile gravePile;
@@ -26,6 +27,13 @@ public class TestApplet extends Applet {
 	static BoardPile boardA[];
 	static BoardPile boardB[];
 	static CardPile allPiles[];
+	
+	static DeckPile odeckPile;
+	static GravePile ogravePile;
+	static HandPile ohand[];
+	static BoardPile oboardA[];
+	static BoardPile oboardB[];
+	static CardPile oallPiles[];
 	
 	final static int start_hand = 5;
 	final static int max_hand = 7;
@@ -55,29 +63,62 @@ public class TestApplet extends Applet {
 	}
 	
 	public void initialize(){
+//		TextIO.putln("width = " + (leftMargin + (Card.width + distBoard) * (no_boardA_piles + 1) + distDeck));
+//		TextIO.putln("height = " + 2*(topMargin + 2 * (Card.height + distBoard)));
+		initPlayer();
+		initOpponent();
+		
+	}
+	
+	public void initPlayer(){
 		// first allocate the arrays
 		allPiles = new CardPile[no_card_piles];
 		hand = new HandPile[no_hand_piles];
 		boardA = new BoardPile[no_boardA_piles];
 		boardB = new BoardPile[no_boardB_piles];
-		
+			
 		// then fill them in
-		int deckWidth = leftMargin + (no_boardA_piles - 1) * (Card.width + distBoard);
-		
-		TextIO.putln("width = " + (leftMargin + (Card.width + distBoard) * (no_boardA_piles + 1) + distDeck));
-		TextIO.putln("height = " + 2*(topMargin + 2 * (Card.height + distBoard)));
-		
-		allPiles[0] = deckPile = new DeckPile(leftMargin + (Card.width + distBoard) * (no_boardA_piles) + distDeck, topMargin + Card.height + distBoard,TestDecks.getTestDeck0());
-		allPiles[1] = gravePile = new GravePile(leftMargin + (Card.width + distBoard) * (no_boardB_piles) + distDeck, topMargin);
-		
+		int widthDeck = leftMargin + (Card.width + distBoard) * (no_boardA_piles) + distDeck;
+		int widthHand = (Card.width + distHand);
+		int widthBoard = (Card.width + distBoard);
+		int heightPlayer = distBuffer + topMargin + 3 * (Card.height + distBoard);
+			
+		allPiles[0] = deckPile = new DeckPile(widthDeck, topMargin + Card.height + distBoard + heightPlayer,TestDecks.getTestDeck0());
+		allPiles[1] = gravePile = new GravePile(widthDeck, topMargin + heightPlayer);
+				
 		for(int i=0; i<no_hand_piles; i++)
-			allPiles[2+i] = hand[i] = new HandPile(leftMargin + (Card.width + distHand) * i, topMargin + 2 * (Card.height + distBoard));
-		
+			allPiles[2+i] = hand[i] = new HandPile(leftMargin + widthHand * i, topMargin + 2 * (Card.height + distBoard) + heightPlayer);
+				
 		for(int i=0; i<no_boardA_piles; i++)
-			allPiles[(2+no_hand_piles)+i] = boardA[i] = new BoardPile(leftMargin + (Card.width + distBoard) * i, topMargin);
-		
+			allPiles[(2+no_hand_piles)+i] = boardA[i] = new BoardPile(leftMargin + widthBoard * i, topMargin + heightPlayer);
+				
 		for(int i=0; i<no_boardB_piles; i++)
-			allPiles[(2+no_hand_piles+no_boardA_piles)+i] = boardB[i] = new BoardPile(leftMargin + (Card.width + distBoard) * i, topMargin + Card.height + distBoard);
+			allPiles[(2+no_hand_piles+no_boardA_piles)+i] = boardB[i] = new BoardPile(leftMargin + widthBoard * i, topMargin + Card.height + distBoard + heightPlayer);
+	}
+	
+	public void initOpponent(){
+		// first allocate the arrays
+		oallPiles = new CardPile[no_card_piles];
+		ohand = new HandPile[no_hand_piles];
+		oboardA = new BoardPile[no_boardA_piles];
+		oboardB = new BoardPile[no_boardB_piles];
+			
+		// then fill them in
+		int widthDeck = leftMargin + (Card.width + distBoard) + distDeck;
+		int widthHand = (Card.width + distHand);
+		int widthBoard = (Card.width + distBoard);
+					
+		oallPiles[0] = odeckPile = new DeckPile(leftMargin, topMargin + Card.height + distBoard, TestDecks.getTestDeck0());
+		oallPiles[1] = ogravePile = new GravePile(leftMargin, topMargin + 2 * (Card.height + distBoard));
+						
+		for(int i=0; i<no_hand_piles; i++)
+			oallPiles[2+i] = ohand[i] = new HandPile(leftMargin + widthHand * i, topMargin);
+						
+		for(int i=0; i<no_boardA_piles; i++)
+			oallPiles[(2+no_hand_piles)+i] = oboardA[i] = new BoardPile(widthDeck + widthBoard * i, topMargin + 2 * (Card.height + distBoard));
+						
+		for(int i=0; i<no_boardB_piles; i++)
+			oallPiles[(2+no_hand_piles+no_boardA_piles)+i] = oboardB[i] = new BoardPile(widthDeck + widthBoard * i, topMargin + Card.height + distBoard);
 	}
 	
 	public void start(){
@@ -179,8 +220,10 @@ public class TestApplet extends Applet {
 	}
 	
 	public void paint(Graphics g) {
-		for (int i = 0; i < no_card_piles; i++)
+		for (int i = 0; i < no_card_piles; i++){
 			allPiles[i].display(g);
+			oallPiles[i].display(g);
+		}
 	}
 	
 }

@@ -5,6 +5,10 @@ import game.linklist.ListIterator;
 
 public class DeckPile extends CardPile{
 
+	public DeckPile(int x, int y){
+		super(x,y);
+	}
+	
 	public DeckPile(int x, int y, Card[] list){
 		super(x,y);
 		addArray(list);
