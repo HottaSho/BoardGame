@@ -6,4 +6,10 @@ public class BoardPile extends CardPile{
 		super(x, y);
 	}
 	
+	public void select(int tx, int ty){
+		
+		top().flip();
+		
+	}
+	
 }

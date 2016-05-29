@@ -66,8 +66,30 @@ public class Card {
 	}
 	
 	public boolean equals(Card other){
+		if(other==null) return false;
 		if(this.type==other.type && this.name.equals(other.name) && this.attack==other.attack && this.health==other.health) return true;
 		return false;
+	}
+	
+	private void drawSquare(Graphics g, int x, int y,  int type){
+		Color colors[] = { new Color(0,102,204), new Color(204,0,0),
+				new Color(0,204,0), new Color(102,0,204)
+		};
+		
+		Color color = colors[type];
+		
+		g.setColor(color);
+        g.fillRect(x + 1, y + 1, width - 2, height - 2);
+
+        g.setColor(color.brighter());
+        g.drawLine(x, y + height - 1, x, y);
+        g.drawLine(x, y, x + width - 1, y);
+
+        g.setColor(color.darker());
+        g.drawLine(x + 1, y + height - 1,
+                         x + width - 1, y + height - 1);
+        g.drawLine(x + width - 1, y + height - 1,
+                         x + width - 1, y + 1);
 	}
 	
 	// draw the card
@@ -79,28 +101,18 @@ public class Card {
 
 		// draw body of card
 		if (faceUp()) {
+			drawSquare(g, x, y, type+1);
 			if(this.type==0){
-				g.setColor(Color.red);
-			}else if(this.type==1){
-				g.setColor(Color.green);
-			}else{
-				g.setColor(Color.magenta);
+				g.setColor(Color.black);
+				g.setFont(TestApplet.myFont);
+				g.drawString("A:"+attack, x+2, y+height-1);
+				g.drawString("H:"+health, x+width-21, y+height-1);
 			}
-			g.drawLine(x + 15, y + 5, x + 15, y + 65);
-			g.drawLine(x + 35, y + 5, x + 35, y + 65);
-			g.drawLine(x + 5, y + 20, x + 45, y + 20);
-			g.drawLine(x + 5, y + 35, x + 45, y + 35);
-			g.drawLine(x + 5, y + 50, x + 45, y + 50);
 			g.setColor(Color.black);
 			g.setFont(TestApplet.myFont);
 			g.drawString(name, x + (5), y + (height/7));
 		}else{
-			g.setColor(Color.black);
-			g.drawLine(x + 15, y + 5, x + 15, y + 65);
-			g.drawLine(x + 35, y + 5, x + 35, y + 65);
-			g.drawLine(x + 5, y + 20, x + 45, y + 20);
-			g.drawLine(x + 5, y + 35, x + 45, y + 35);
-			g.drawLine(x + 5, y + 50, x + 45, y + 50);
+			drawSquare(g, x, y, 0);
 		}
 	}
 	

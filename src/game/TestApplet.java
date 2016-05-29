@@ -134,6 +134,7 @@ public class TestApplet extends Applet {
 		for(int i=0;i<no_boardB_piles;i++){
 			if(boardB[i].empty()){
 				boardB[i].addCard(aCard);
+				boardB[i].top().flip();
 				TextIO.putln("//card played at position B" + i);
 				return true;
 			}
