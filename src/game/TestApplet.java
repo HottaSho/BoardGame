@@ -5,7 +5,10 @@ import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import javax.swing.JOptionPane;
+
 import game.cards.*;
+import game.net.*;
 
 public class TestApplet extends Applet {
 	
@@ -20,6 +23,8 @@ public class TestApplet extends Applet {
 	final static int distHand = 5;
 	final static int distDeck = 30;
 	final static int distBuffer = 20;
+	final static int distPlayer = distBuffer + topMargin + 3 * (Card.height + distBoard);
+	final static int distScreen = distPlayer - distBuffer + 5;
 	
 	static DeckPile deckPile;
 	static GravePile gravePile;
@@ -34,10 +39,18 @@ public class TestApplet extends Applet {
 	static BoardPile oboardA[];
 	static BoardPile oboardB[];
 	static CardPile oallPiles[];
+	//static Screen screen;
 	
 	final static int start_hand = 5;
 	final static int max_hand = 7;
 	static int cur_hand = 0;
+	
+	static int pHealth = 1000;
+	static int oHealth = 1000;
+	static int turnTime = 120;
+	
+	private GameClient socketClient;
+	private GameServer socketServer;
 	
 	public final static Font myFont = new Font("Serif",Font.PLAIN,10);
 	
@@ -67,7 +80,20 @@ public class TestApplet extends Applet {
 //		TextIO.putln("height = " + 2*(topMargin + 2 * (Card.height + distBoard)));
 		initPlayer();
 		initOpponent();
+		//initScreen();
+		initNet();
+		startGame();
+		socketClient.sendData("ping".getBytes());
+	}
+	
+	public void initNet(){
+		if(JOptionPane.showConfirmDialog(this, "Do you want to run the server") == 0){
+			socketServer = new GameServer(this);
+			socketServer.start();
+		}
 		
+		socketClient = new GameClient(this, "localhost");
+		socketClient.start();
 	}
 	
 	public void initPlayer(){
@@ -81,19 +107,18 @@ public class TestApplet extends Applet {
 		int widthDeck = leftMargin + (Card.width + distBoard) * (no_boardA_piles) + distDeck;
 		int widthHand = (Card.width + distHand);
 		int widthBoard = (Card.width + distBoard);
-		int heightPlayer = distBuffer + topMargin + 3 * (Card.height + distBoard);
 			
-		allPiles[0] = deckPile = new DeckPile(widthDeck, topMargin + Card.height + distBoard + heightPlayer,TestDecks.getTestDeck0());
-		allPiles[1] = gravePile = new GravePile(widthDeck, topMargin + heightPlayer);
+		allPiles[0] = deckPile = new DeckPile(widthDeck, topMargin + Card.height + distBoard + distPlayer,TestDecks.getTestDeck0());
+		allPiles[1] = gravePile = new GravePile(widthDeck, topMargin + distPlayer);
 				
 		for(int i=0; i<no_hand_piles; i++)
-			allPiles[2+i] = hand[i] = new HandPile(leftMargin + widthHand * i, topMargin + 2 * (Card.height + distBoard) + heightPlayer);
+			allPiles[2+i] = hand[i] = new HandPile(leftMargin + widthHand * i, topMargin + 2 * (Card.height + distBoard) + distPlayer);
 				
 		for(int i=0; i<no_boardA_piles; i++)
-			allPiles[(2+no_hand_piles)+i] = boardA[i] = new BoardPile(leftMargin + widthBoard * i, topMargin + heightPlayer);
+			allPiles[(2+no_hand_piles)+i] = boardA[i] = new BoardPile(leftMargin + widthBoard * i, topMargin + distPlayer);
 				
 		for(int i=0; i<no_boardB_piles; i++)
-			allPiles[(2+no_hand_piles+no_boardA_piles)+i] = boardB[i] = new BoardPile(leftMargin + widthBoard * i, topMargin + Card.height + distBoard + heightPlayer);
+			allPiles[(2+no_hand_piles+no_boardA_piles)+i] = boardB[i] = new BoardPile(leftMargin + widthBoard * i, topMargin + Card.height + distBoard + distPlayer);
 	}
 	
 	public void initOpponent(){
@@ -121,9 +146,19 @@ public class TestApplet extends Applet {
 			oallPiles[(2+no_hand_piles+no_boardA_piles)+i] = oboardB[i] = new BoardPile(widthDeck + widthBoard * i, topMargin + Card.height + distBoard);
 	}
 	
-	public void start(){
+//	public void initScreen(){
+//		int width = (Card.width + distBoard) * (no_boardA_piles) + distDeck + Card.width;
+//		int height = 10;
+//		screen = new Screen(leftMargin, distScreen, width, height);
+//	}
+	
+	public void startGame(){
 		deckPile.shuffle();
 		drawCard(start_hand);
+	}
+	
+	public void startTurn(){
+		drawCard();
 	}
 	
 	public static void useCard(Card aCard){
@@ -224,6 +259,9 @@ public class TestApplet extends Applet {
 			allPiles[i].display(g);
 			oallPiles[i].display(g);
 		}
+//		if(screen!=null){
+//			screen.display(g);
+//		}
 	}
 	
 }

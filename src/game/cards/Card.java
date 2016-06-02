@@ -110,7 +110,7 @@ public class Card {
 			}
 			g.setColor(Color.black);
 			g.setFont(TestApplet.myFont);
-			g.drawString(name, x + (5), y + (height/7));
+			g.drawString(name, x+(width/2)-(name.length()/2)*5, y + (height/7));
 		}else{
 			drawSquare(g, x, y, 0);
 		}
