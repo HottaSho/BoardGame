@@ -57,16 +57,6 @@ public class CardPile {
 		cardList.add(aCard);
 	}
 	
-	// draw pile
-	public void display(Graphics g){
-		g.setColor(Color.black);
-
-	    if (cardList.empty())
-	      g.drawRect(x, y, Card.width, Card.height);
-	    else
-	      top().draw(g, x, y);
-	}
-	
 	// return pile as string
 	public String toString(){
 		String result = "";
@@ -119,5 +109,15 @@ public class CardPile {
 			result[i++] = (Card) c.value();
 		return result;
 	}
+	
+	// draw pile
+		public void display(Graphics g){
+			g.setColor(Color.black);
+
+		    if (cardList.empty())
+		      g.drawRect(x, y, Card.width, Card.height);
+		    else
+		      top().draw(g, x, y);
+		}
 	
 }

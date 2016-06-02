@@ -8,8 +8,12 @@ import java.awt.event.MouseEvent;
 import javax.swing.JOptionPane;
 
 import game.cards.*;
+import game.characters.Player;
+import game.characters.PlayerMP;
 import game.net.*;
+import game.net.packets.Packet00Login;
 
+@SuppressWarnings("serial")
 public class TestApplet extends Applet {
 	
 	final static int no_card_piles = 19;
@@ -51,6 +55,7 @@ public class TestApplet extends Applet {
 	
 	private GameClient socketClient;
 	private GameServer socketServer;
+	private Player player;
 	
 	public final static Font myFont = new Font("Serif",Font.PLAIN,10);
 	
@@ -76,14 +81,21 @@ public class TestApplet extends Applet {
 	}
 	
 	public void initialize(){
-//		TextIO.putln("width = " + (leftMargin + (Card.width + distBoard) * (no_boardA_piles + 1) + distDeck));
-//		TextIO.putln("height = " + 2*(topMargin + 2 * (Card.height + distBoard)));
+		TextIO.putln("width = " + (leftMargin + (Card.width + distBoard) * (no_boardA_piles + 1) + distDeck));
+		TextIO.putln("height = " + 2*(topMargin + 2 * (Card.height + distBoard)));
 		initPlayer();
 		initOpponent();
 		//initScreen();
 		initNet();
 		startGame();
+		
+		player = new PlayerMP(JOptionPane.showInputDialog(this, "Please enter a username"), null, -1);
+		Packet00Login loginPacket = new Packet00Login(player.getUsername());
+		if(socketServer != null) {
+			socketServer.addConnection((PlayerMP) player, loginPacket);
+		}
 		socketClient.sendData("ping".getBytes());
+		loginPacket.writeData(socketClient);
 	}
 	
 	public void initNet(){

@@ -8,7 +8,7 @@ public class BoardPile extends CardPile{
 	
 	public void select(int tx, int ty){
 		
-		top().flip();
+		if(top()!=null) top().flip();
 		
 	}
 	
