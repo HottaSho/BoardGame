@@ -24,14 +24,16 @@ public class Menu extends JFrame implements ActionListener {
 				pnl.revalidate();
 				pnl.repaint();
 				pnl.add(b5);
-				gamestate = 1;
+				setGamestate(1);
 				b5.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						pnl.removeAll();
 						pnl.revalidate();
 						pnl.repaint();
-						gamestate = 2;
+						setGamestate(2);
+						new PlayingArea();
+						
 					}
 				});
 
@@ -46,7 +48,7 @@ public class Menu extends JFrame implements ActionListener {
 						pnl.add(b2);
 						pnl.add(b3);
 						pnl.add(b4);
-						gamestate = 0;
+						setGamestate(0);
 					}
 				});
 			}
@@ -85,6 +87,20 @@ public class Menu extends JFrame implements ActionListener {
 				System.exit(0);
 			}
 		});
+	}
+
+	/**
+	 * @return the gamestate
+	 */
+	public int getGamestate() {
+		return gamestate;
+	}
+
+	/**
+	 * @param gamestate the gamestate to set
+	 */
+	public void setGamestate(int gamestate) {
+		this.gamestate = gamestate;
 	}
 
 	@Override
