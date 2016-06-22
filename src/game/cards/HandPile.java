@@ -1,15 +1,15 @@
 package game.cards;
 
-import game.TestApplet;
+import game.gfx.Board;
 
 public class HandPile extends CardPile{
 	
-	public HandPile(int x, int y){
-		super(x,y);
+	public HandPile(int x, int y, Board board){
+		super(x,y,board);
 	}
 	
 	public void select(int tx, int ty){
-		TestApplet.useCard(this.top());
+		board.useCard(this.top());
 		
 	}
 	

@@ -4,7 +4,10 @@ import java.awt.Color;
 import java.awt.Graphics;
 
 import game.TextIO;
-import game.linklist.*;
+import game.gfx.Board;
+import game.linklist.Link;
+import game.linklist.LinkedList;
+import game.linklist.ListIterator;
 
 public class CardPile {
 	// coordinates of the card pile
@@ -14,9 +17,12 @@ public class CardPile {
 	// linked list of cards
 	protected LinkedList cardList;
 	
-	CardPile(int tx, int ty){
+	protected Board board;
+	
+	CardPile(int tx, int ty, Board board){
 		x = tx;
 		y = ty;
+		this.board = board;
 		cardList = new LinkedList();
 	}
 	

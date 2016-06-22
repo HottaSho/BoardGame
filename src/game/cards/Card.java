@@ -1,9 +1,8 @@
 package game.cards;
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
-
-import game.TestApplet;
 
 public class Card {
 	// data fields
@@ -94,6 +93,7 @@ public class Card {
 	
 	// draw the card
 	public void draw(Graphics g, int x, int y) {
+		Font myFont = new Font("Serif", Font.PLAIN, 10);
 		// clear rectangle, draw border
 		g.clearRect(x, y, width, height);
 		g.setColor(Color.black);
@@ -104,12 +104,12 @@ public class Card {
 			drawSquare(g, x, y, type+1);
 			if(this.type==0){
 				g.setColor(Color.black);
-				g.setFont(TestApplet.myFont);
+				g.setFont(myFont);
 				g.drawString("A:"+attack, x+2, y+height-1);
 				g.drawString("H:"+health, x+width-21, y+height-1);
 			}
 			g.setColor(Color.black);
-			g.setFont(TestApplet.myFont);
+			g.setFont(myFont);
 			g.drawString(name, x+(width/2)-(name.length()/2)*5, y + (height/7));
 		}else{
 			drawSquare(g, x, y, 0);

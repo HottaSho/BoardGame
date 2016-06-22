@@ -1,16 +1,16 @@
 package game.cards;
 
-import game.TestApplet;
+import game.gfx.Board;
 import game.linklist.ListIterator;
 
 public class DeckPile extends CardPile{
 
-	public DeckPile(int x, int y){
-		super(x,y);
+	public DeckPile(int x, int y, Board board){
+		super(x,y,board);
 	}
 	
-	public DeckPile(int x, int y, Card[] list){
-		super(x,y);
+	public DeckPile(int x, int y, Board board, Card[] list){
+		super(x,y,board);
 		addArray(list);
 	}
 	
@@ -26,7 +26,7 @@ public class DeckPile extends CardPile{
 	
 	public void select(int tx, int ty){
 		
-		TestApplet.drawCard();
+		board.drawCard();
 		
 	}
 	
