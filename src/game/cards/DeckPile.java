@@ -26,7 +26,8 @@ public class DeckPile extends CardPile{
 	
 	public void select(int tx, int ty){
 		
-		board.drawCard();
+		selected = true;
+		//board.drawCard();
 		
 	}
 	

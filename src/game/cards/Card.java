@@ -9,7 +9,7 @@ public class Card {
 	public final static int width = 50;
 	public final static int height = 70;
 	
-	private static String types[] = {"MONSTER", "SPELL", "TRAP"};
+	private static String types[] = {"MONSTER", "SPELL", "TRAP", "NULL"};
 	
 	private boolean faceup;
 	private int type;
@@ -19,14 +19,14 @@ public class Card {
 	
 	// constructor
 	public Card(String n, int t){
-		name = n;
+		name = n.toUpperCase();
 		type = t;
 		faceup = false;
 	}
 	
 	// constructor to set attack and health
 	public Card(String n, int t, int a, int h){
-		name = n;
+		name = n.toUpperCase();
 		type = t;
 		attack = a;
 		health = h;
@@ -59,9 +59,9 @@ public class Card {
 	}
 	
 	public String toString(){
-		String stats = "";
-		if(type==0) stats += ", " + "ATK: " + attack + " - VIT: " + health;
-		return name + ", " + types[type] + stats;
+		String stats = "-";
+		if(type==0) stats += attack + "-" + health;
+		return name + stats;
 	}
 	
 	public boolean equals(Card other){
@@ -100,7 +100,7 @@ public class Card {
 		g.drawRect(x, y, width, height);
 
 		// draw body of card
-		if (faceUp()) {
+		if (faceUp() && type!=3) {
 			drawSquare(g, x, y, type+1);
 			if(this.type==0){
 				g.setColor(Color.black);

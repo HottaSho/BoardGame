@@ -13,7 +13,7 @@ import game.net.GameServer;
 public class Game implements Runnable {
 
 	public static final int WIDTH = 395;
-    public static final int HEIGHT = 530;
+    public static final int HEIGHT = 560;
     public static final int SCALE = 3;
     public static final String NAME = "Game";
 
@@ -23,9 +23,9 @@ public class Game implements Runnable {
 	
 	private JFrame frame;
 	public static Game game;
-	public static Board board;
-	public static Painter painter;
-	public static GameServer server;
+	public Board board;
+	public Painter painter;
+	public GameServer server;
 	public Thread thread;
 	
 	public static void main(String[] args) {
@@ -39,6 +39,9 @@ public class Game implements Runnable {
 		painter.setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		
 		server = new GameServer(this);
+		
+		board.setServer(server);
+		server.start();
 		
 		frame = new JFrame();
 		frame.setTitle(NAME);

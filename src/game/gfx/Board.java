@@ -6,13 +6,44 @@ import game.Game;
 import game.TextIO;
 import game.cards.BoardPile;
 import game.cards.Card;
+import game.cards.CardCollection2;
 import game.cards.CardPile;
 import game.cards.DeckPile;
 import game.cards.GravePile;
 import game.cards.HandPile;
 import game.cards.TestDecks;
+import game.net.GameServer;
 
 public class Board {
+
+	// enum for type of data
+	enum Data {
+		DRAW("DRAW", 0), PLAY("PLAY", 1), DESTROY("DESTROY", 2),
+		ATTACK("ATTACK", 3), END("END", 4), START("START", 5), DECK("DECK", 6);
+
+		private int id;
+		private String name;
+
+		private Data(String name, int id) {
+			this.name = name;
+			this.id = id;
+		}
+
+		public int getId() {
+			return id;
+		}
+
+		public String getGrave() {
+			return name;
+		}
+
+		public boolean equals(String name) {
+			if (this.name.equals(name))
+				return true;
+			else
+				return false;
+		}
+	}
 
 	public int x;
 	public int y;
@@ -28,7 +59,8 @@ public class Board {
 	final static int distHand = 5;
 	final static int distDeck = 30;
 	final static int distBuffer = 20;
-	final static int distPlayer = distBuffer + topMargin + 3 * (Card.height + distBoard);
+	final static int distButton = topMargin + 3 * (Card.height + distBoard);
+	final static int distPlayer = distButton + 50;
 	final static int distScreen = distPlayer - distBuffer + 5;
 
 	static DeckPile deckPile;
@@ -49,17 +81,27 @@ public class Board {
 	final static int max_hand = 7;
 	static int cur_hand = 0;
 
+	public int oHandCount = 0;
+	public int oDeckCount = 30;
+
 	public boolean yourTurn = false;
-	
+	public Button button;
+
 	public Game game;
+	public GameServer server;
 
 	public Board(int tx, int ty, Game game) {
 		this.game = game;
 		x = tx;
 		y = ty;
-		
+
 		initPlayer();
 		initOpponent();
+		initGUI();
+	}
+
+	public void initGUI() {
+		button = new Button(315, distButton, game);
 	}
 
 	public void initPlayer() {
@@ -74,8 +116,8 @@ public class Board {
 		int widthHand = (Card.width + distHand);
 		int widthBoard = (Card.width + distBoard);
 
-		allPiles[0] = deckPile = new DeckPile(widthDeck, topMargin + Card.height + distBoard + distPlayer,
-				this, TestDecks.getTestDeck0());
+		allPiles[0] = deckPile = new DeckPile(widthDeck, topMargin + Card.height + distBoard + distPlayer, this,
+				TestDecks.getTestDeck0());
 		allPiles[1] = gravePile = new GravePile(widthDeck, topMargin + distPlayer, this);
 
 		for (int i = 0; i < no_hand_piles; i++)
@@ -84,195 +126,227 @@ public class Board {
 
 		for (int i = 0; i < no_boardA_piles; i++)
 			allPiles[(2 + no_hand_piles) + i] = boardA[i] = new BoardPile(leftMargin + widthBoard * i,
-					topMargin + distPlayer, this);
+					topMargin + distPlayer, this, i);
 
 		for (int i = 0; i < no_boardB_piles; i++)
 			allPiles[(2 + no_hand_piles + no_boardA_piles) + i] = boardB[i] = new BoardPile(leftMargin + widthBoard * i,
-					topMargin + Card.height + distBoard + distPlayer, this);
+					topMargin + Card.height + distBoard + distPlayer, this, i+10);
 	}
 
-	public void initOpponent(){
+	public void initOpponent() {
 		// first allocate the arrays
 		oallPiles = new CardPile[no_card_piles];
 		ohand = new HandPile[no_hand_piles];
 		oboardA = new BoardPile[no_boardA_piles];
 		oboardB = new BoardPile[no_boardB_piles];
-			
+
 		// then fill them in
 		int widthDeck = leftMargin + (Card.width + distBoard) + distDeck;
 		int widthHand = (Card.width + distHand);
 		int widthBoard = (Card.width + distBoard);
-					
-		oallPiles[0] = odeckPile = new DeckPile(leftMargin, topMargin + Card.height + distBoard, this, TestDecks.getTestDeck0());
+
+		oallPiles[0] = odeckPile = new DeckPile(leftMargin, topMargin + Card.height + distBoard, this);
 		oallPiles[1] = ogravePile = new GravePile(leftMargin, topMargin + 2 * (Card.height + distBoard), this);
-						
-		for(int i=0; i<no_hand_piles; i++)
-			oallPiles[2+i] = ohand[i] = new HandPile(leftMargin + widthHand * i, topMargin, this);
-						
-		for(int i=0; i<no_boardA_piles; i++)
-			oallPiles[(2+no_hand_piles)+i] = oboardA[i] = new BoardPile(widthDeck + widthBoard * i, topMargin + 2 * (Card.height + distBoard), this);
-						
-		for(int i=0; i<no_boardB_piles; i++)
-			oallPiles[(2+no_hand_piles+no_boardA_piles)+i] = oboardB[i] = new BoardPile(widthDeck + widthBoard * i, topMargin + Card.height + distBoard, this);
+
+		for (int i = 0; i < no_hand_piles; i++)
+			oallPiles[2 + i] = ohand[i] = new HandPile(leftMargin + widthHand * 6 - (widthHand * i), topMargin, this);
+
+		for (int i = 0; i < no_boardA_piles; i++)
+			oallPiles[(2 + no_hand_piles) + i] = oboardA[i] = new BoardPile(
+					widthDeck + widthBoard * 4 - (widthBoard * i), topMargin + 2 * (Card.height + distBoard), this, i);
+
+		for (int i = 0; i < no_boardB_piles; i++)
+			oallPiles[(2 + no_hand_piles + no_boardA_piles) + i] = oboardB[i] = new BoardPile(
+					widthDeck + widthBoard * 4 - (widthBoard * i), topMargin + Card.height + distBoard, this, i+10);
 	}
-	
-	public boolean select(int tx, int ty) {
+
+	public void setServer(GameServer gs) {
+		server = gs;
+	}
+
+	public boolean select(int x, int y) {
 		boolean flag = false;
-		for (int i = 0; i < no_card_piles; i++)
-			if (allPiles[i].includes(tx, ty)) {
-				if (allPiles[i].empty()) {
-					switch (i) {
-					case 0:
-						allPiles[0].addCard(allPiles[1].pop());
-						break;
-					case 1:
-						allPiles[1].addCard(allPiles[0].pop());
-						break;
-					case 2:
-						allPiles[2].addCard(allPiles[3].pop());
-						break;
-					case 3:
-						allPiles[3].addCard(allPiles[2].pop());
-						break;
-					}
-				} else
-					allPiles[i].select(tx, ty);
+		for (int i = no_card_piles - 1; i >= 0; i--) {
+			if (allPiles[i].includes(x, y)) {
+				allPiles[i].select(x, y);
+				game.painter.repaint();
 				flag = true;
+			} else {
+				allPiles[i].unselect();
 			}
+		}
+		if (button.includes(x, y)) {
+			button.select(x, y);
+			game.painter.repaint();
+		}
 		return flag;
 	}
 
-	public String toString() {
+	public void encode(int type) {
+		encode(type, "");
+	}
+	
+	public void encode(int type, String addition) {
 		String result = "";
-		for (int i = 0; i < allPiles.length; i++) {
-			if (allPiles[i].empty())
-				result += "0";
-			else {
-				result += "1";
-				if (allPiles[i].top().faceUp())
-					result += "u";
-				else
-					result += "d";
-			}
-			if (i != (allPiles.length - 1))
-				result += ",";
+		switch (type) {
+		case 0:
+			result += "DRAW,";
+			result += deckPile.top().toString() + ",";
+			break;
+		case 1:
+			result += "PLAY,";
+			break;
+		case 2:
+			result += "DESTROY,";
+			break;
+		case 3:
+			result += "ATTACK,";
+			break;
+		case 4:
+			result += "END,";
+			yourTurn = false;
+			break;
+		case 5:
+			result += "START";
+			break;
+		case 6:
+			result += "DECK,";
+			result += deckPile.top().toString() + ",";
+			break;
 		}
-		System.out.println(result);
-		return result;
+		result+=addition;
+		System.out.println("ENCODED - " + type + ": " + result);
+		if (server == null)
+			TextIO.putln("ERROR - NO SERVER");
+		server.writeData(result);
 	}
 
 	public void decode(String input) {
-		System.out.println("decoding...");
-
+		System.out.println("RECEIVED - " + input);
+		String[] array = input.split(",");
+		if (array[0].equals("START"))
+			odeckPile.addCard(CardCollection2.get("NULL"));
+		if (array[0].equals("END"))
+			startTurn();
+		if (array[0].equals("DRAW")) {
+			String[] dataArray = array[1].split("-");
+			ohand[oHandCount++].addCard(CardCollection2.get(dataArray[0]));
+			oDeckCount--;
+		}
+		if (array[0].equals("DECK")) {
+			String[] dataArray = array[1].split("-");
+			odeckPile.pop();
+			odeckPile.addCard(CardCollection2.get(dataArray[0]));
+		}
+		if (array[0].equals("PLAY")) {
+			String[] dataArray = array[1].split("-");
+			int posBoard = Integer.parseInt(dataArray[0].substring(1));
+			int posHand = Integer.parseInt(dataArray[1].substring(1));
+			if(posBoard<10){
+				oboardA[posBoard].addCard(ohand[posHand].pop());
+			}else{
+				oboardB[(posBoard-10)].addCard(ohand[posHand].pop());
+			}
+			oHandCount--;
+			oFixHand(posHand);
+		}
+		game.painter.repaint();
 	}
 
-	public void startGame(){
+	public boolean empty(CardPile[] pile) {
+		for (int i = 0; i < pile.length; i++)
+			if (!pile[i].empty())
+				return false;
+		return true;
+	}
+
+	public void startGame() {
+		encode(Data.START.getId());
 		deckPile.shuffle();
 		drawCard(start_hand);
 	}
-	
-	public void startTurn(){
+
+	public void startTurn() {
+		yourTurn = true;
 		drawCard();
 	}
 	
-	public void useCard(Card aCard){
-		for(int i=0;i<cur_hand;i++){
-			if(hand[i].top().equals(aCard)){
-				if(hand[i].top().getType()==0){
-					if(playBoardA(hand[i].top())){
-						hand[i].pop();
-						cur_hand--;
-						fixHand(i);
-						return;
-					}
-				}else{
-					if(playBoardB(hand[i].top())){
-						hand[i].pop();
-						cur_hand--;
-						fixHand(i);
-						return;
-					}
+	public Card playCard(int position) {
+		for(int i=0; i<cur_hand; i++) {
+			if(hand[i].selected()){
+				int type = hand[i].top().getType();
+				if(type == 0){
+					if(position > 10) break;
 				}
+				else if(position < 10) break;
+				Card result = hand[i].pop();
+				cur_hand--;
+				fixHand(i);
+				encode(Data.PLAY.getId(), "B"+position+"-"+"H"+i+"-"+result.toString());
+				return result;
 			}
 		}
+		return null;
 	}
 	
-	public void destCard(){
-		
-	}
-	
-	public void fixHand(int x){
-		for(int i=x;i<cur_hand;i++){
-			if(i>=(max_hand-1)) return;
-			hand[i].addCard(hand[i+1].pop());
+	public void fixHand(int x) {
+		for (int i = x; i < cur_hand; i++) {
+			if (i >= (max_hand - 1))
+				return;
+			hand[i].addCard(hand[i + 1].pop());
 		}
 	}
 	
-	public static boolean playBoardA(Card aCard){
-		for(int i=0;i<no_boardA_piles;i++){
-			if(boardA[i].empty()){
-				boardA[i].addCard(aCard);
-				TextIO.putln("//card played at position A" + i);
-				return true;
-			}
+	public void oFixHand(int x) {
+		for (int i = x; i < oHandCount; i++) {
+			if (i >= (max_hand - 1))
+				return;
+			ohand[i].addCard(ohand[i + 1].pop());
 		}
-		TextIO.putln("//boardA is FULL");
-		return false;
 	}
-	
-	public boolean playBoardB(Card aCard){
-		for(int i=0;i<no_boardB_piles;i++){
-			if(boardB[i].empty()){
-				boardB[i].addCard(aCard);
-				boardB[i].top().flip();
-				TextIO.putln("//card played at position B" + i);
-				return true;
-			}
-		}
-		TextIO.putln("//boardB is FULL");
-		return false;
-	}
-	
-	public void drawCard(){
+
+	public void drawCard() {
 		drawCard(1);
 	}
-	
-	public void drawCard(int x){
-		if(x<=0) return;
-		if((cur_hand+1)>max_hand){
+
+	public void drawCard(int x) {
+		if (x <= 0)
+			return;
+		if ((cur_hand + 1) > max_hand) {
 			mill(1);
-		}else{
-			if(deckPile.empty()){
-				TextIO.putln("//deck is EMPTY");
-			}else{
+		} else {
+			if (deckPile.empty()) {
+			} else {
+				encode(Data.DRAW.getId());
 				hand[cur_hand].addCard(deckPile.pop());
 				hand[cur_hand].top().flip();
 				cur_hand++;
-				TextIO.putln("//a card is DRAWN to " + (cur_hand-1));
 			}
 		}
+		encode(Data.DECK.getId());
 		game.painter.repaint();
-		drawCard(x-1);
+		drawCard(x - 1);
 	}
-	
-	public void mill(){
+
+	public void mill() {
 		mill(1);
 	}
-	public void mill(int x){
-		if(x<=0) return;
-		if(deckPile.empty()){
-			TextIO.putln("//deck is EMPTY");
-		}else{
+
+	public void mill(int x) {
+		if (x <= 0)
+			return;
+		if (deckPile.empty()) {
+		} else {
 			gravePile.addCard(deckPile.pop());
-			TextIO.putln("//a card it MILLED");
-			mill(x-1);
+			mill(x - 1);
 		}
 	}
-	
+
 	public void display(Graphics g) {
 		for (int i = 0; i < no_card_piles; i++) {
 			allPiles[i].display(g);
 			oallPiles[i].display(g);
+			button.display(g);
 		}
 	}
 
