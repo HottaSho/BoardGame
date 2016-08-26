@@ -6,7 +6,7 @@ import game.Game;
 import game.TextIO;
 import game.cards.BoardPile;
 import game.cards.Card;
-import game.cards.CardCollection2;
+import game.cards.CardCollection;
 import game.cards.CardPile;
 import game.cards.DeckPile;
 import game.cards.GravePile;
@@ -18,8 +18,8 @@ public class Board {
 
 	// enum for type of data
 	enum Data {
-		DRAW("DRAW", 0), PLAY("PLAY", 1), DESTROY("DESTROY", 2),
-		ATTACK("ATTACK", 3), END("END", 4), START("START", 5), DECK("DECK", 6);
+		DRAW("DRAW", 0), PLAY("PLAY", 1), DESTROY("DESTROY", 2), ATTACK("ATTACK", 3), END("END", 4), START("START",
+				5), DECK("DECK", 6);
 
 		private int id;
 		private String name;
@@ -63,6 +63,8 @@ public class Board {
 	final static int distPlayer = distButton + 50;
 	final static int distScreen = distPlayer - distBuffer + 5;
 
+	static CardPile piles[] = new CardPile[(no_card_piles * 2)];
+
 	static DeckPile deckPile;
 	static GravePile gravePile;
 	static HandPile hand[];
@@ -81,11 +83,24 @@ public class Board {
 	final static int max_hand = 7;
 	static int cur_hand = 0;
 
+	public int startHealth = 50;
+	public int startMana = 2;
+	
+	public int health = 0;
+	public int mana = 0;
+	public int mGain = 1;
+	
+	public int oHealth = 0;
+	public int oMana = 0;
+	public int oMGain = 1;
 	public int oHandCount = 0;
 	public int oDeckCount = 30;
 
+	public int gameState = -1; // 0 - draw / 1 - main / 2 - end / -1 - opponent
 	public boolean yourTurn = false;
+	public boolean message = true;
 	public Button button;
+	public Overlay overlay;
 
 	public Game game;
 	public GameServer server;
@@ -97,11 +112,13 @@ public class Board {
 
 		initPlayer();
 		initOpponent();
+		initPiles();
 		initGUI();
 	}
 
 	public void initGUI() {
 		button = new Button(315, distButton, game);
+		overlay = new Overlay(this);
 	}
 
 	public void initPlayer() {
@@ -126,11 +143,11 @@ public class Board {
 
 		for (int i = 0; i < no_boardA_piles; i++)
 			allPiles[(2 + no_hand_piles) + i] = boardA[i] = new BoardPile(leftMargin + widthBoard * i,
-					topMargin + distPlayer, this, i);
+					topMargin + distPlayer, this, i, true);
 
 		for (int i = 0; i < no_boardB_piles; i++)
 			allPiles[(2 + no_hand_piles + no_boardA_piles) + i] = boardB[i] = new BoardPile(leftMargin + widthBoard * i,
-					topMargin + Card.height + distBoard + distPlayer, this, i+10);
+					topMargin + Card.height + distBoard + distPlayer, this, i + 10, true);
 	}
 
 	public void initOpponent() {
@@ -153,11 +170,20 @@ public class Board {
 
 		for (int i = 0; i < no_boardA_piles; i++)
 			oallPiles[(2 + no_hand_piles) + i] = oboardA[i] = new BoardPile(
-					widthDeck + widthBoard * 4 - (widthBoard * i), topMargin + 2 * (Card.height + distBoard), this, i);
+					widthDeck + widthBoard * 4 - (widthBoard * i), topMargin + 2 * (Card.height + distBoard), this, i,
+					false);
 
 		for (int i = 0; i < no_boardB_piles; i++)
 			oallPiles[(2 + no_hand_piles + no_boardA_piles) + i] = oboardB[i] = new BoardPile(
-					widthDeck + widthBoard * 4 - (widthBoard * i), topMargin + Card.height + distBoard, this, i+10);
+					widthDeck + widthBoard * 4 - (widthBoard * i), topMargin + Card.height + distBoard, this, i + 10,
+					false);
+	}
+
+	public void initPiles() {
+		for (int i = 0; i < allPiles.length; i++)
+			piles[i] = allPiles[i];
+		for (int i = 0; i < oallPiles.length; i++)
+			piles[allPiles.length + i] = oallPiles[i];
 	}
 
 	public void setServer(GameServer gs) {
@@ -166,13 +192,13 @@ public class Board {
 
 	public boolean select(int x, int y) {
 		boolean flag = false;
-		for (int i = no_card_piles - 1; i >= 0; i--) {
-			if (allPiles[i].includes(x, y)) {
-				allPiles[i].select(x, y);
+		for (int i = piles.length - 1; i >= 0; i--) {
+			if (piles[i].includes(x, y)) {
+				piles[i].select(x, y);
 				game.painter.repaint();
 				flag = true;
 			} else {
-				allPiles[i].unselect();
+				piles[i].unselect();
 			}
 		}
 		if (button.includes(x, y)) {
@@ -182,10 +208,12 @@ public class Board {
 		return flag;
 	}
 
+	// Networking
+
 	public void encode(int type) {
 		encode(type, "");
 	}
-	
+
 	public void encode(int type, String addition) {
 		String result = "";
 		switch (type) {
@@ -214,41 +242,53 @@ public class Board {
 			result += deckPile.top().toString() + ",";
 			break;
 		}
-		result+=addition;
-		System.out.println("ENCODED - " + type + ": " + result);
+		result += addition;
+		if (message)
+			System.out.println("ENCODED - " + type + ": " + result);
 		if (server == null)
 			TextIO.putln("ERROR - NO SERVER");
 		server.writeData(result);
 	}
 
 	public void decode(String input) {
-		System.out.println("RECEIVED - " + input);
+		if (message)
+			System.out.println("RECEIVED - " + input);
 		String[] array = input.split(",");
 		if (array[0].equals("START"))
-			odeckPile.addCard(CardCollection2.get("NULL"));
+			odeckPile.addCard(new Card(CardCollection.get("NULL")));
 		if (array[0].equals("END"))
 			startTurn();
 		if (array[0].equals("DRAW")) {
 			String[] dataArray = array[1].split("-");
-			ohand[oHandCount++].addCard(CardCollection2.get(dataArray[0]));
+			Card newCard = new Card(CardCollection.get(dataArray[0]));
+			newCard.flip();
+			ohand[oHandCount++].addCard(newCard);
 			oDeckCount--;
 		}
 		if (array[0].equals("DECK")) {
 			String[] dataArray = array[1].split("-");
 			odeckPile.pop();
-			odeckPile.addCard(CardCollection2.get(dataArray[0]));
+			Card newCard = new Card(CardCollection.get(dataArray[0]));
+			newCard.flip();
+			odeckPile.addCard(newCard);
 		}
 		if (array[0].equals("PLAY")) {
 			String[] dataArray = array[1].split("-");
 			int posBoard = Integer.parseInt(dataArray[0].substring(1));
 			int posHand = Integer.parseInt(dataArray[1].substring(1));
-			if(posBoard<10){
+			if (posBoard < 10) {
 				oboardA[posBoard].addCard(ohand[posHand].pop());
-			}else{
-				oboardB[(posBoard-10)].addCard(ohand[posHand].pop());
+			} else {
+				oboardB[(posBoard - 10)].addCard(ohand[posHand].pop());
 			}
 			oHandCount--;
 			oFixHand(posHand);
+		}
+		if (array[0].equals("ATTACK")) {
+			String[] dataArray = array[1].split("-");
+			int posA = Integer.parseInt(dataArray[0]);
+			int posB = Integer.parseInt(dataArray[1]);
+			attack(posA, posB);
 		}
 		game.painter.repaint();
 	}
@@ -264,31 +304,36 @@ public class Board {
 		encode(Data.START.getId());
 		deckPile.shuffle();
 		drawCard(start_hand);
+		mana=startMana;
 	}
 
 	public void startTurn() {
 		yourTurn = true;
 		drawCard();
+		mana+=mGain;
 	}
-	
+
+	// Board Mechanics
+
 	public Card playCard(int position) {
-		for(int i=0; i<cur_hand; i++) {
-			if(hand[i].selected()){
+		for (int i = 0; i < cur_hand; i++) {
+			if (hand[i].selected()) {
 				int type = hand[i].top().getType();
-				if(type == 0){
-					if(position > 10) break;
-				}
-				else if(position < 10) break;
+				if (type == 0) {
+					if (position >= 10)
+						break;
+				} else if (position < 10)
+					break;
 				Card result = hand[i].pop();
 				cur_hand--;
 				fixHand(i);
-				encode(Data.PLAY.getId(), "B"+position+"-"+"H"+i+"-"+result.toString());
+				encode(Data.PLAY.getId(), "B" + position + "-" + "H" + i + "-" + result.toString());
 				return result;
 			}
 		}
 		return null;
 	}
-	
+
 	public void fixHand(int x) {
 		for (int i = x; i < cur_hand; i++) {
 			if (i >= (max_hand - 1))
@@ -296,7 +341,7 @@ public class Board {
 			hand[i].addCard(hand[i + 1].pop());
 		}
 	}
-	
+
 	public void oFixHand(int x) {
 		for (int i = x; i < oHandCount; i++) {
 			if (i >= (max_hand - 1))
@@ -342,11 +387,42 @@ public class Board {
 		}
 	}
 
+	// Game mechanics
+
+	public void attack(int pos) {
+		for (int i = 0; i < no_boardA_piles; i++) {
+			if (!boardA[i].empty() && boardA[i].selected()) {
+				String result = "" + pos + "-" + i;
+				encode(Data.ATTACK.getId(), result);
+				int dmgA = boardA[i].top().getAttack();
+				int dmgB = oboardA[pos].top().getAttack();
+				if (boardA[i].top().damage(dmgB))
+					gravePile.addCard(boardA[i].pop());
+				if (oboardA[pos].top().damage(dmgA))
+					ogravePile.addCard(oboardA[pos].pop());
+			}
+		}
+	}
+
+	public void attack(int posA, int posB) {
+		int dmgA = boardA[posA].top().getAttack();
+		int dmgB = oboardA[posB].top().getAttack();
+		if (boardA[posA].top().damage(dmgB))
+			gravePile.addCard(boardA[posA].pop());
+		if (oboardA[posB].top().damage(dmgA))
+			ogravePile.addCard(oboardA[posB].pop());
+	}
+
+	public void attacked(int posA, int posB) {
+		Card cA = boardA[posA].top();
+		Card cB = oboardA[posA].top();
+	}
+
 	public void display(Graphics g) {
-		for (int i = 0; i < no_card_piles; i++) {
-			allPiles[i].display(g);
-			oallPiles[i].display(g);
+		for (int i = 0; i < piles.length; i++) {
+			piles[i].display(g);
 			button.display(g);
+			overlay.display(g);
 		}
 	}
 

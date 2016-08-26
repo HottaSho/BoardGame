@@ -9,7 +9,8 @@ public class HandPile extends CardPile{
 	}
 	
 	public void select(int tx, int ty){
-		selected = true;
+		if(!empty())
+			selected = true;
 		//board.useCard(this.top());
 		
 	}

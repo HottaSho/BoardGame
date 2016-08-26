@@ -2,6 +2,7 @@ package game.gfx;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
@@ -14,20 +15,30 @@ public class Painter extends JPanel implements MouseListener {
 
 	public boolean selected = false;
 	
+	private Image dbImage;
+	private Graphics dbg;
 	Game game;
 
 	public Painter(Game game) {
 		this.game = game;
 		setFocusable(true);
 		requestFocus();
-		setBackground(Color.WHITE);
+		setBackground(Color.DARK_GRAY);
 		addMouseListener(this);
 	}
 
+	public void paint(Graphics g) {
+		dbImage = createImage(getWidth(), getHeight());
+		dbg = dbImage.getGraphics();
+		paintComponent(dbg);
+		g.drawImage(dbImage, 0, 0, this);
+	}
+	
 	@Override
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		game.render(g);
+		repaint();
 	}
 
 	@Override
@@ -37,6 +48,8 @@ public class Painter extends JPanel implements MouseListener {
 			int x = e.getX();
 			int y = e.getY();
 
+			//game.board.overlay.toggleDisplay();
+			
 			if (game.board.yourTurn) {
 				if (game.board.select(x, y)) {
 					//repaint();

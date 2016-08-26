@@ -18,6 +18,8 @@ public class GameServer {
 
 	private String ip = "localhost";
 	private int port = 22222;
+	private boolean debug = true;
+	private boolean message = false;
 
 	private Scanner scanner = new Scanner(System.in);
 
@@ -31,14 +33,16 @@ public class GameServer {
 
 	public GameServer(Game game) {
 		this.game = game;
-		//start();
+		// start();
 	}
 
 	public void start() {
-		System.out.println("Please input the IP: ");
-		ip = scanner.nextLine();
-		System.out.println("Please input the port: ");
-		port = scanner.nextInt();
+		if (!debug) {
+			System.out.println("Please input the IP: ");
+			ip = scanner.nextLine();
+			System.out.println("Please input the port: ");
+			port = scanner.nextInt();
+		}
 		while (port < 1 || port > 65535) {
 			System.out.println("The port you entered was invalid, please input another port: ");
 			port = scanner.nextInt();
@@ -113,7 +117,8 @@ public class GameServer {
 	}
 
 	public void writeData(String data) {
-		System.out.println("DATA WAS SENT");
+		if (message)
+			System.out.println("DATA WAS SENT");
 		out.println(data);
 
 	}

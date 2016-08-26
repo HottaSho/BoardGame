@@ -34,9 +34,7 @@ public class Button {
 		if(game.board.yourTurn) game.board.encode(4);
 	}
 	
-	private void drawSquare(Graphics g, int x, int y, int type) {
-		Color color = new Color(96,96,96);
-
+	private void drawSquare(Graphics g, int x, int y, int type, Color color) {
 		g.setColor(color);
 		g.fillRect(x + 1, y + 1, width - 2, height - 2);
 
@@ -52,15 +50,17 @@ public class Button {
 	// draw the card
 	public void display(Graphics g) {
 		// clear rectangle, draw border
-		g.clearRect(x, y, width, height);
+//		g.clearRect(x, y, width, height);
 		g.setColor(Color.black);
 		g.drawRect(x, y, width, height);
 
-		drawSquare(g, x, y, 0);
+		drawSquare(g, x, y, 0, Color.CYAN);
+		g.setFont(new Font("Arial", Font.BOLD, 12));
+		g.setColor(Color.WHITE);
 		if(game.board.yourTurn){
-			g.drawString(turnOne, x + 2, y + 5 + height / 2);
+			g.drawString(turnOne, x + 3, y + 5 + height / 2);
 		}else{
-			g.drawString(turnTwo, x + width / 3 - 3, y + 5 + height / 2);
+			g.drawString(turnTwo, x + width / 3 - 2, y + 5 + height / 2);
 		}
 	}
 
